@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Users - Tamper-Proof Record Management System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+    <style>
+        body {
+            background-color: #1a202c;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            background-image: url('https://img.clipart-library.com/2/clip-gifs-with-backgrounds/clip-gifs-with-backgrounds-24.gif');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        header {
+            background-color: #2d3748;
+            padding: 1rem;
+            width: 100%;
+            height: 60px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            align-items: center;
+        }
+        header a:hover {
+            background-color: #3182ce;
+            color: white;
+        }
+        header h1 {
+            flex-grow: 1;
+            text-align: center;
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        .content {
+            margin-top: 80px;
+            padding: 20px;
+            text-align: center;
+        }
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .search-bar {
+            padding: 10px;
+            font-size: 1rem;
+            width: 300px;
+            border-radius: 5px;
+            border: none;
+            background-color: #4a5568;
+            color: white;
+            outline: none;
+        }
+        .search-button {
+            padding: 10px 15px;
+            margin-left: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            background-color: #3182ce;
+            color: white;
+        }
+        .filter-options {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .filter-options input, .filter-options select {
+            padding: 8px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: none;
+            background-color: #4a5568;
+            color: white;
+            outline: none;
+        }
+        .details-section {
+            display: flex;
+            justify-content: space-between;
+            background: #2d3748;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .details-section span {
+            flex: 1; /* Equal flex growth for each span */
+            text-align: center; /* Center-align the content */
+            margin: 0 75px; /* Add small margins for spacing */
+        }
+        .details-section b {
+            font-weight: bold; /* Explicitly ensure bold text */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            color: black;
+            border-radius: 5px;
+            table-layout: fixed;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid black;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: normal;
+        }
+        th {
+            background-color: #3182ce;
+            color: white;
+        }
+        .download-button {
+            background-color: #3182ce;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: #2d3748;
+            margin: 5% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 5px;
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+            border-radius: 5px;
+        }
+        .modal-buttons {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .modal-buttons button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .close-btn {
+            background-color: #e53e3e;
+            color: white;
+        }
+        .download-btn {
+            background-color: #3182ce;
+            color: white;
+        }
+        .close-btn:hover, .download-btn:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="dashboard2.html" style="text-decoration:none;color:white;font-size:1.5rem;">
+            <i class="fas fa-arrow-left"></i> Dashboard
+        </a>
+        <h1>Tamper-Proof Record Management System</h1>
+    </header>
+    <div class="content">
+        <div class="search-container">
+            <input type="text" class="search-bar" id="uniqueId" placeholder="Enter Unique ID...">
+            <button class="search-button" onclick="fetchUserRecords()"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="filter-options">
+            <label>Date Range:</label>
+            <input type="date" id="startDate" placeholder="Start Date">
+            <input type="date" id="endDate" placeholder="End Date">
+            <button onclick="fetchUserRecords()">Filter</button>
+        </div>
+        <div class="details-section" id="userDetails" style="display: none;">
+            <span><b>Name:</b> <a id="userName"></a></a>
+            <span><b>Age:</b> <a id="userAge"></a></a>
+            <span><b>Date of Birth:</b> <a id="userDob"></a></span>
+            <span><b>Gender:</b> <a id="userGender"></a></span>
+        </div>
+        <table id="recordsTable" border="1">
+            <tr>
+                <th>Time</th>
+                <th>Date</th>
+                <th>Issuer's Name</th>
+                <th>Remarks</th>
+                <th>File</th>
+            </tr>
+        </table>
+        <p id="message" style="color: red;"></p>
+    </div>
+    
+    <!-- Modal for Document Preview -->
+    <div id="documentModal" class="modal">
+        <div class="modal-content">
+            <iframe id="documentViewer" src="" title="Document Preview"></iframe>
+            <div class="modal-buttons">
+                <button class="close-btn" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateAge(dob) {
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        function fetchUserRecords() {
+            const uniqueId = document.getElementById("uniqueId").value.trim();
+            if (!uniqueId) {
+                document.getElementById("message").innerText = "Please enter a Unique ID.";
+                return;
+            }
+            const encodedUniqueId = encodeURIComponent(uniqueId);
+            const startDate = document.getElementById("startDate").value;
+            const endDate = document.getElementById("endDate").value;
+
+            let url = `/api/user/get-user-records/${encodedUniqueId}`;
+            const params = new URLSearchParams();
+            if (startDate) params.append('startDate', startDate);
+            if (endDate) params.append('endDate', endDate);
+            if (params.toString()) url += `?${params.toString()}`;
+
+            fetch(url, {
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data || !data.success || !data.records || data.records.length === 0) {
+                    document.getElementById("message").innerText = "No records found for this Unique ID.";
+                    document.getElementById("userDetails").style.display = "none";
+                    renderTable([]); // Render an empty table
+                    return;
+                }
+        
+                const user = data.user || {};
+                document.getElementById("userName").innerText = user.name || 'N/A';
+                document.getElementById("userDob").innerText = user.dob ? new Date(user.dob).toLocaleDateString() : 'N/A';
+                document.getElementById("userGender").innerText = user.gender || 'N/A';
+                document.getElementById("userAge").innerText = user.dob ? calculateAge(user.dob) : 'N/A';
+                document.getElementById("userDetails").style.display = "block";
+                
+                renderTable(data.records);
+                document.getElementById("message").innerText = "";
+            })
+            .catch(error => {
+                console.error("Error fetching user records:", error);
+                document.getElementById("message").innerText = "Error retrieving records. Try again.";
+            });
+        }
+        
+        function renderTable(records) {
+            const table = document.getElementById("recordsTable");
+            table.innerHTML = `
+               <tr>
+                    <th>Time</th>
+                    <th>Date</th>
+                    <th>Issuer's Name</th>
+                    <th>Remarks</th>
+                    <th>File</th>
+                </tr>`;
+                
+            if (records.length === 0) {
+                return;
+            }
+                
+            records.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            records.forEach(record => {
+               const recordId = record._id || 'unknown';
+                console.log('Record:', record); // Debug log
+                const row = `<tr>
+                    <td>${new Date(record.createdAt).toLocaleTimeString()}</td>
+                    <td>${new Date(record.createdAt).toLocaleDateString()}</td>
+                    <td>${record.issuerName || 'N/A'}</td>
+                    <td>${record.remarks || 'N/A'}</td>
+                    <td>
+                        <button class="download-button" onclick="openDocumentPreview('${recordId}')">View</button>
+                    </td>
+                </tr>`;
+                table.innerHTML += row;
+            });
+        }
+        
+        function openDocumentPreview(recordId) {
+            const url = `/api/document/preview/${recordId}`;
+            const token = localStorage.getItem("token");
+            if (!token) {
+                document.getElementById("message").innerText = "Unauthorized: Token missing. Please log in again.";
+                return;
+            }
+        
+            fetch(url, {
+                headers: { "Authorization": `Bearer ${token}` }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.message || `HTTP error! Status: ${response.status}`);
+                    });
+                }
+                return response.blob(); // Get the binary data as a blob only if response is OK
+            })
+            .then(blob => {
+                if (!blob || blob.size === 0) {
+                    throw new Error("Empty or invalid document data received");
+                }
+                const blobUrl = window.URL.createObjectURL(blob);
+                const modal = document.getElementById("documentModal");
+                const iframe = document.getElementById("documentViewer");
+                iframe.src = blobUrl;
+                modal.style.display = "block";
+            })
+            .catch(error => {
+                console.error("Preview error:", error);
+                document.getElementById("message").innerText = error.message;
+            });
+        }
+        
+        function closeModal() {
+            const modal = document.getElementById("documentModal");
+            const iframe = document.getElementById("documentViewer");
+            modal.style.display = "none";
+            iframe.src = ""; // Clear the iframe source
+        }
+
+        // Close modal if clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById("documentModal");
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

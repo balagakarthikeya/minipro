@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create New People Profile - Tamper-Proof Record Management System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+    <style>
+        body {
+            background-color: #1a202c;
+            color: white;
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            flex-direction: column;
+        }
+        header {
+            background-color: #2d3748;
+            padding: 1rem;
+            text-align: center;
+            width: 100%;
+            height: 60px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header a:hover {
+            background-color: #3182ce;
+            color: white;
+        }
+        header h1 {
+            flex-grow: 1;
+            text-align: center;
+            margin: 0;
+            font-size: 1.5rem;
+            color: white;
+        }
+        .form-container {
+            margin-top: 80px;
+            display: flex;
+            justify-content: center;
+            flex-grow: 1;
+            align-items: center;
+        }
+        .form-box {
+            background-color: #2d3748;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            width: 400px;
+        }
+        .form-box h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .form-box .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-box .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .form-box .form-group input, .form-box .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .form-box .form-group input[type="submit"] {
+            background-color: #3182ce;
+            color: white;
+            cursor: pointer;
+        }
+        .form-box .form-group input[type="submit"]:hover {
+            background-color: #2b6cb0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="dashboard2.html" style="text-decoration:none;color:white;font-size:1.5rem;">
+            <i class="fas fa-arrow-left"></i> Dashboard
+        </a>
+        <h1>Tamper-Proof Record Management System</h1>
+    </header>
+    <div class="form-container">
+        <div class="form-box">
+            <h2>Create New People Profile</h2>
+            <form id="createPeopleForm">
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="dob">Date of Birth:</label>
+                    <input type="date" id="dob" name="dob" required>
+                </div>
+                <div class="form-group">
+                    <label for="gender">Gender:</label>
+                    <select id="gender" name="gender" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number:</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="address">Address:</label>
+                    <input type="text" id="address" name="address" required>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Create People Profile">
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("createPeopleForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const peopleData = {
+                name: document.getElementById("name").value,
+                dob: document.getElementById("dob").value,
+                gender: document.getElementById("gender").value,
+                email: document.getElementById("email").value,
+                phone: document.getElementById("phone").value,
+                address: document.getElementById("address").value
+            };
+
+            // Generate a unique 6-digit alphanumeric and symbolic ID
+            const uniqueId = generateUniqueId(6);
+            peopleData.uniqueId = uniqueId;
+
+            fetch("/api/user/create-people", {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json", 
+                    "Authorization": `Bearer ${localStorage.getItem("token")}` 
+                },
+                body: JSON.stringify(peopleData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("People profile created successfully! A unique ID has been emailed to them.");
+                    document.getElementById("createPeopleForm").reset();
+                    sendUniqueIdEmail(peopleData.email, uniqueId);
+                } else {
+                    alert("Failed to create people profile: " + (data.message || ""));
+                }
+            })
+            .catch(error => {
+                console.error("Error creating people profile:", error);
+                alert("Error creating people profile. Try again.");
+            });
+        });
+
+        // Function to generate a unique 6-digit alphanumeric and symbolic ID
+        function generateUniqueId(length) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        // Function to send email with unique ID
+        async function sendUniqueIdEmail(to, uniqueId) {
+            try {
+                const response = await fetch('/api/user/send-unique-id', {
+                    method: 'POST',
+                    headers: { 
+                        "Content-Type": "application/json", 
+                        "Authorization": `Bearer ${localStorage.getItem("token")}` 
+                    },
+                    body: JSON.stringify({ email: to, uniqueId: uniqueId })
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    console.error('Failed to send unique ID email:', data.message);
+                }
+            } catch (error) {
+                console.error('Error sending unique ID email:', error);
+            }
+        }
+    </script>
+</body>
+</html>

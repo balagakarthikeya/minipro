@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profiles - Tamper-Proof Record Management System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+    <style>
+        body {
+            background-color: #1a202c;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        header {
+            background-color: #2d3748;
+            padding: 1rem;
+            width: 100%;
+            height: 60px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        header h1 {
+            flex-grow: 1;
+            text-align: center;
+            margin: 0;
+            font-size: 1.5rem;
+            color: white;
+        }
+        .menu-toggle {
+            position: absolute;
+            left: 20px;
+            cursor: pointer;
+            font-size: 2rem;
+            color: rgb(0, 255, 213);
+            background: none;
+            border: none;
+            transition: transform 0.5s ease;
+        }
+        .menu-toggle.open {
+            transform: rotate(90deg);
+        }
+        .logout-button {
+            position: absolute;
+            right: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #2d3748;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+        .logout-button:hover {
+            background-color:rgb(244, 10, 10);
+        }
+        .sidebar {
+            width: 200px;
+            background-color: white;
+            height: 100vh;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            position: fixed;
+            left: -300px;
+            top: 60px; /* Adjusted to be below the header */
+            transition: left 0.3s ease;
+        }
+        .sidebar button {
+            background-color: rgb(255, 255, 255);
+            color: black; /* Changed text color to black */
+            border: none;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            width: 100%;
+        }
+        .sidebar button:hover {
+            background-color: #3182ce;
+            color: white;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 80px;
+            width: 80%;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        .tables {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+        }
+        .table-container, .table-container2 {/* Minimum width for responsiveness */
+            width: 100%; /* Equal width for both containers */
+            display: flex;
+            flex-direction: column;
+        }
+        
+        table {
+            width: 100%;
+            color: white;
+            border-collapse: collapse; /* Ensuring both tables have equal width */
+            text-align: left;
+            border-radius: 8px;
+            overflow: hidden;
+            table-layout: fixed;/* Ensuring equal column widths */
+        }
+        
+        th, td {
+            border: 1px solid white;
+            padding: 12px;
+            text-align: center; 
+            min-height: 40px;
+            background-color: #2d3748; /* Ensuring equal height */
+        }
+        
+        th {
+            background-color: #4a5568;
+            height: 50px;  /* Enforcing equal header height */
+            width:50%;
+        }
+        th:nth-child(1), td:nth-child(1) {
+            width: 70%; /* "Name" column takes 70% of the table width */
+        }
+        th:nth-child(2), td:nth-child(2) {
+            width: 30%; /* "Action"/"Actions" column takes 30% of the table width */
+        }
+        .btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        .approve-btn {
+            color: #38a169;
+        }
+        .reject-btn {
+            color: #e53e3e;
+        }
+        .delete-btn {
+            color: #e53e3e;
+        }
+        .scrollable {
+            max-height: 300px;
+            overflow-y: auto;
+            display: block;
+        }
+        .table-container tbody:empty::after,
+        .table-container2 tbody:empty::after {
+            content: "";
+            display: block;
+            height: 40px; /* Match the row height */
+            background-color: #2d3748; /* Match row background */
+            border: 1px solid white; /* Match row border */
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <a href="dashboard.html"><button>Home</button></a>
+        <a href="profiles.html"><button>Profiles</button></a>
+        <a href="users.html"><button>Users</button></a>
+    </div>
+    <header>
+        <button class="menu-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <h1>Tamper-Proof Record Management System</h1>
+        <button class="logout-button">Logout</button> <!-- Simplified -->
+    </header>
+    <div class="container">
+        <h2>Profiles</h2>
+        <div class="tables">
+            <div class="table-container">
+                <table id="approvedTable" class="scrollable">
+                    <thead>
+                        <tr><th>Name</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="approvedTableBody"></tbody>
+                </table>
+            </div>
+            <div class="table-container2">
+                <table id="pendingTable" class="scrollable">
+                    <thead>
+                        <tr><th>Name</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="pendingTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                alert("Please log in to access this page.");
+                window.location.href = "index.html";
+                return;
+            }
+            fetchPendingRequests();
+            fetchApprovedUsers();
+        });
+        
+        function fetchPendingRequests() {
+            fetch("/api/admin/pending-signups", {
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json();
+            })
+            .then(users => {
+                if (!Array.isArray(users)) throw new Error("Expected an array of users");
+                const tbody = document.getElementById("pendingTableBody");
+                tbody.innerHTML = '';
+                users.forEach(user => {
+                    tbody.innerHTML += `<tr><td onclick="showUserDetails('${user._id}')">${user.username}</td><td><button onclick="approveUser('${user._id}')">Accept</button><button onclick="rejectUser('${user._id}')">Reject</button></td></tr>`;
+                });
+            })
+            .catch(error => {
+                console.error("Error fetching pending requests:", error);
+                alert("Failed to load pending requests. Please try again.");
+            });
+        }
+    
+        function approveUser(userId) {
+            fetch(`/api/admin/approve-signup/${userId}`, {
+                method: "POST",
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json();
+            })
+            .then(() => {
+                alert("User approved successfully!");
+                fetchPendingRequests();
+                fetchApprovedUsers();
+            })
+            .catch(error => {
+                console.error("Error approving user:", error);
+                alert("Failed to approve user. Please try again.");
+            });
+        }
+    
+        function rejectUser(userId) {
+            fetch(`/api/admin/reject-signup/${userId}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json();
+            })
+            .then(() => {
+                alert("User rejected successfully!");
+                fetchPendingRequests();
+            })
+            .catch(error => {
+                console.error("Error rejecting user:", error);
+                alert("Failed to reject user. Please try again.");
+            });
+        }
+    
+        function fetchApprovedUsers() {
+            fetch("/api/admin/approved-users", {
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json();
+            })
+            .then(users => {
+                if (!Array.isArray(users)) throw new Error("Expected an array of users");
+                const tbody = document.getElementById("approvedTableBody");
+                tbody.innerHTML = '';
+                users.forEach(user => {
+                    tbody.innerHTML += `<tr><td onclick="showUserDetails('${user._id}')">${user.username}</td><td><button onclick="deleteUser('${user._id}')">Delete</button></td></tr>`;
+                });
+            })
+            .catch(error => {
+                console.error("Error fetching approved users:", error);
+                alert("Failed to load approved users. Please try again.");
+            });
+        }
+    
+        function deleteUser(userId) {
+            fetch(`/api/admin/delete-user/${userId}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                return response.json();
+            })
+            .then(() => {
+                alert("User removed successfully!");
+                fetchApprovedUsers();
+            })
+            .catch(error => {
+                console.error("Error deleting user:", error);
+                alert("Failed to delete user. Please try again.");
+            });
+        }
+    
+        function showUserDetails(userId) {
+            // Fetch both pending & approved users
+            Promise.all([
+                fetch("/api/admin/pending-signups", { headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` } }).then(res => res.json()),
+                fetch("/api/admin/approved-users", { headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` } }).then(res => res.json())
+            ])
+            .then(([pendingUsers, approvedUsers]) => {
+                if (!Array.isArray(pendingUsers) || !Array.isArray(approvedUsers)) {
+                    throw new Error("Invalid response from server");
+                }
+        
+                // Search for user in both lists
+                const user = pendingUsers.find(u => u._id === userId) || approvedUsers.find(u => u._id === userId);
+        
+                if (user) {
+                    alert(`User Details:\nName: ${user.username}\nEmail: ${user.email}\nIndustry: ${user.industryType}\nIndustry Name: ${user.industryName || 'N/A'}\nStatus: ${user.status || 'Pending'}`);
+                } else {
+                    alert("User not found.");
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching user details:", error);
+                alert("Failed to load user details.");
+            });
+        }
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            const menuToggle = document.querySelector(".menu-toggle");
+            const currentLeft = window.getComputedStyle(sidebar).left;
+            const sidebarPosition = currentLeft === "0px" ? "-300px" : "0px";
+            sidebar.style.left = sidebarPosition;
+            menuToggle.classList.toggle('open');
+        }
+
+        document.querySelector(".logout-button").addEventListener("click", function() {
+            localStorage.removeItem("token");
+            localStorage.removeItem("role"); // Clear role too
+            window.location.href = "index.html";
+        });
+    </script>
+</body>
+</html>
