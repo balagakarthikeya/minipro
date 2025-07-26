@@ -109,7 +109,7 @@ Visit http://localhost:3000 to view the app.
 ```
 
 
-## Advantages
+### Advantages
 	- Ensures tamper-proof record keeping.
 	- Transparent verification of records.
 	- Scalable to any industry: healthcare, education, legal.
@@ -117,7 +117,7 @@ Visit http://localhost:3000 to view the app.
 
 
 
-## Scope of the Project
+### Scope of the Project
 	- Can be extended to government identity management systems.
 	- Supports integration with IPFS for decentralized file storage.
 	- Can evolve into a national citizen record framework.
@@ -125,15 +125,15 @@ Visit http://localhost:3000 to view the app.
 
 
 
-## Usage
+### Usage
 
-### Admin
+#### Admin
 	- Login at /index.html
 	- View pending staff requests
 	- Approve/reject hospital accounts
 	- Manage citizen record access
 
-### Hospital Staff
+#### Hospital Staff
 	- Signup/login via /signup.html and /login.html
 	- Add new users with auto-generated Unique ID
 	- Upload and manage documents via /add-data-to-existing-user.html
