@@ -107,22 +107,20 @@ node app.js
 
 Visit http://localhost:3000 to view the app.
 ```
-
-
+---
 ### Advantages
 	- Ensures tamper-proof record keeping.
 	- Transparent verification of records.
 	- Scalable to any industry: healthcare, education, legal.
 	- Secure login with strict access control.
-
-
+---
 
 ### Scope of the Project
 	- Can be extended to government identity management systems.
 	- Supports integration with IPFS for decentralized file storage.
 	- Can evolve into a national citizen record framework.
 	- Open for enhancements like biometric integration and role-based smart contracts.
-
+---
 
 
 ### Usage
