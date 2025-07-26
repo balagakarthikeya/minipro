@@ -1,4 +1,4 @@
-Tamper-Proof Record Management System
+**Tamper-Proof Record Management System**
 
 A secure, blockchain-based application for managing sensitive records in domains such as healthcare, education, and governance. The system ensures data integrity, tamper detection, and decentralized control using Ethereum smart contracts.
 
